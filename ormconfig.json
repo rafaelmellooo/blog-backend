@@ -1,0 +1,10 @@
+{
+  "type": "pg",
+  "host": "localhost",
+  "port": 25432,
+  "username": "docker",
+  "password": "docker",
+  "database": "blog",
+  "entities": ["dist/**/*.entity{.ts,.js}"],
+  "synchronize": true
+}
