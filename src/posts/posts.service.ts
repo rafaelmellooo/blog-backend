@@ -18,14 +18,14 @@ export class PostsService {
   }
 
   create(post: Post): Promise<Post> {
-    return this.postsRepository.save(post)
+    return this.postsRepository.save(post);
   }
 
   update(id: number, post: Post): Promise<UpdateResult> {
-    return this.postsRepository.update(id, post)
+    return this.postsRepository.update(id, post);
   }
 
   async remove(id: number): Promise<void> {
-    await this.postsRepository.delete(id)
+    await this.postsRepository.delete(id);
   }
 }

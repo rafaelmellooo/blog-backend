@@ -1,4 +1,14 @@
-import { Controller, Get, Post as HttpPost, Body, HttpCode, Param, Put, Delete, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post as HttpPost,
+  Body,
+  HttpCode,
+  Param,
+  Put,
+  Delete,
+  HttpStatus,
+} from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { Post } from './post.entity';
 import { UpdateResult } from 'typeorm';
@@ -25,12 +35,12 @@ export class PostsController {
 
   @Put(':id')
   update(@Param('id') id: number, @Body() post: Post): Promise<UpdateResult> {
-    return this.postsService.update(id, post)
+    return this.postsService.update(id, post);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id') id: number): Promise<void> {
-    await this.postsService.remove(id)
+    await this.postsService.remove(id);
   }
 }
