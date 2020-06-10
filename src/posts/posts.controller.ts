@@ -11,7 +11,6 @@ import {
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { Post } from './post.entity';
-import { UpdateResult } from 'typeorm';
 
 @Controller('posts')
 export class PostsController {
@@ -34,7 +33,7 @@ export class PostsController {
   }
 
   @Put(':id')
-  update(@Param('id') id: number, @Body() post: Post): Promise<UpdateResult> {
+  update(@Param('id') id: number, @Body() post: Post): Promise<Post> {
     return this.postsService.update(id, post);
   }
 
