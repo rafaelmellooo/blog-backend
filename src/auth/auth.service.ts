@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { compare } from 'bcrypt';
@@ -17,11 +21,11 @@ export class AuthService {
     const user = await this.usersRepository.findOne({ email });
 
     if (!user) {
-      return null;
+      throw new NotFoundException();
     }
 
     if (!(await compare(password, user.password))) {
-      return null;
+      throw new UnauthorizedException();
     }
 
     return user.id;
