@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { compare } from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
 
 import { User } from '../users/user.entity';
 
@@ -9,6 +10,7 @@ import { User } from '../users/user.entity';
 export class AuthService {
   constructor(
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
+    private readonly jwtService: JwtService,
   ) {}
 
   async validateUser(email: string, password: string): Promise<number> {
@@ -23,5 +25,13 @@ export class AuthService {
     }
 
     return user.id;
+  }
+
+  login(user: number): { access_token: string } {
+    const payload = { user };
+
+    return {
+      access_token: this.jwtService.sign(payload),
+    };
   }
 }
