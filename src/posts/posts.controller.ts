@@ -8,9 +8,13 @@ import {
   Put,
   Delete,
   HttpStatus,
+  UseGuards,
+  Request,
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { Post } from './post.entity';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { User } from '../users/user.entity';
 
 @Controller('posts')
 export class PostsController {
@@ -22,24 +26,34 @@ export class PostsController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: number): Promise<Post> {
-    return this.postsService.findOne(id);
+  findOne(@Param('id') id: string): Promise<Post> {
+    return this.postsService.findOne(Number(id));
   }
 
+  @UseGuards(JwtAuthGuard)
   @HttpPost()
   @HttpCode(HttpStatus.CREATED)
-  create(@Body() post: Post): Promise<Post> {
-    return this.postsService.create(post);
+  create(@Request() req: { user: User }, @Body() post: Post): Promise<Post> {
+    return this.postsService.create(req.user, post);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Put(':id')
-  update(@Param('id') id: number, @Body() post: Post): Promise<Post> {
-    return this.postsService.update(id, post);
+  update(
+    @Param('id') id: string,
+    @Request() req: { user: User },
+    @Body() post: Post,
+  ): Promise<Post> {
+    return this.postsService.update(Number(id), req.user, post);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(@Param('id') id: number): Promise<void> {
-    await this.postsService.remove(id);
+  async remove(
+    @Param('id') id: string,
+    @Request() req: { user: User },
+  ): Promise<void> {
+    await this.postsService.remove(Number(id), req.user);
   }
 }
