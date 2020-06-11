@@ -20,6 +20,10 @@ export class Post {
   @ManyToOne(
     () => User,
     user => user.posts,
+    {
+      onUpdate: 'CASCADE',
+      onDelete: 'CASCADE',
+    },
   )
   user: User;
 }
