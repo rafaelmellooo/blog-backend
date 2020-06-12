@@ -25,35 +25,42 @@ export class PostsController {
     return this.postsService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string): Promise<Post> {
-    return this.postsService.findOne(Number(id));
+  @Get(':slug')
+  findOne(@Param('slug') slug: string): Promise<Post> {
+    return this.postsService.findOne(slug);
   }
 
   @UseGuards(JwtAuthGuard)
   @HttpPost()
   @HttpCode(HttpStatus.CREATED)
-  create(@Request() req: { user: User }, @Body() post: Post): Promise<Post> {
+  async create(
+    @Request() req: { user: User },
+    @Body() post: Post,
+  ): Promise<Post> {
     return this.postsService.create(req.user, post);
   }
 
   @UseGuards(JwtAuthGuard)
-  @Put(':id')
-  update(
-    @Param('id') id: string,
+  @Put(':slug')
+  async update(
+    @Param('slug') slug: string,
     @Request() req: { user: User },
     @Body() post: Post,
   ): Promise<Post> {
-    return this.postsService.update(Number(id), req.user, post);
+    return this.postsService.update(slug, req.user, post);
   }
 
   @UseGuards(JwtAuthGuard)
-  @Delete(':id')
+  @Delete(':slug')
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(
-    @Param('id') id: string,
+    @Param('slug') slug: string,
     @Request() req: { user: User },
   ): Promise<void> {
-    await this.postsService.remove(Number(id), req.user);
+    try {
+      await this.postsService.remove(slug, req.user);
+    } catch (exception) {
+      throw exception;
+    }
   }
 }

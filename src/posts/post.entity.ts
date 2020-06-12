@@ -11,8 +11,12 @@ export class Post {
 
   @Column({
     length: 100,
+    unique: true,
   })
   title: string;
+
+  @Column({ length: 100, unique: true })
+  slug: string;
 
   @Column('text')
   body: string;

@@ -21,7 +21,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     const user = await this.usersRepository.findOne(payload.user, {
       relations: ['posts'],
     });
-    delete user.password;
+
     return user;
   }
 }

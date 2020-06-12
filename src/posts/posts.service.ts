@@ -1,8 +1,14 @@
-import { Injectable, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  ForbiddenException,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Post } from './post.entity';
 import { User } from '../users/user.entity';
+import slugify from 'slugify';
 
 @Injectable()
 export class PostsService {
@@ -14,30 +20,67 @@ export class PostsService {
     return this.postsRepository.find();
   }
 
-  findOne(id: number): Promise<Post> {
-    return this.postsRepository.findOne(id, { relations: ['user'] });
+  findOne(slug: string): Promise<Post> {
+    return this.postsRepository.findOne({ slug }, { relations: ['user'] });
   }
 
-  create(user: User, post: Post): Promise<Post> {
+  async create(user: User, post: Post): Promise<Post> {
+    post.slug = slugify(post.title, {
+      lower: true,
+    });
+
     post.user = user;
-    return this.postsRepository.save(post);
+
+    try {
+      return this.postsRepository.save(post);
+    } catch {
+      throw new BadRequestException();
+    }
   }
 
-  update(id: number, user: User, post: Post): Promise<Post> {
-    post.id = id;
+  async update(slug: string, user: User, post: Post): Promise<Post> {
+    let post_id: number;
 
-    if (!user.posts.map(post => post.id).includes(post.id)) {
+    try {
+      post_id = (
+        await this.postsRepository.findOne({ slug }, { select: ['id'] })
+      ).id;
+    } catch {
+      throw new NotFoundException();
+    }
+
+    if (!user.posts.map(post => post.id).includes(post_id)) {
       throw new ForbiddenException();
     }
 
-    return this.postsRepository.save(post);
+    post.id = post_id;
+
+    post.slug = slugify(post.title, {
+      lower: true,
+    });
+
+    try {
+      return this.postsRepository.save(post);
+    } catch {
+      throw new BadRequestException();
+    }
   }
 
-  async remove(id: number, user: User): Promise<void> {
-    if (!user.posts.map(post => post.id).includes(id)) {
+  async remove(slug: string, user: User): Promise<void> {
+    let post_id: number;
+
+    try {
+      post_id = (
+        await this.postsRepository.findOne({ slug }, { select: ['id'] })
+      ).id;
+    } catch {
+      throw new NotFoundException();
+    }
+
+    if (!user.posts.map(post => post.id).includes(post_id)) {
       throw new ForbiddenException();
     }
 
-    await this.postsRepository.delete(id);
+    await this.postsRepository.delete(post_id);
   }
 }

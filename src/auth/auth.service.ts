@@ -18,7 +18,11 @@ export class AuthService {
   ) {}
 
   async validateUser(email: string, password: string): Promise<number> {
-    const user = await this.usersRepository.findOne({ email });
+    const user = await this.usersRepository
+      .createQueryBuilder('user')
+      .addSelect('user.password')
+      .where('user.email = :email', { email })
+      .getOne();
 
     if (!user) {
       throw new NotFoundException();
