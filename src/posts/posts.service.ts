@@ -6,9 +6,9 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import slugify from 'slugify';
 import { Post } from './post.entity';
 import { User } from '../users/user.entity';
-import slugify from 'slugify';
 
 @Injectable()
 export class PostsService {
@@ -17,22 +17,34 @@ export class PostsService {
   ) {}
 
   findAll(): Promise<Post[]> {
-    return this.postsRepository.find();
+    return this.postsRepository
+      .createQueryBuilder('post')
+      .leftJoin('post.user', 'user')
+      .select(['post.id', 'post.title', 'post.slug', 'post.image', 'user.name'])
+      .getMany();
   }
 
   findOne(slug: string): Promise<Post> {
     return this.postsRepository.findOne({ slug }, { relations: ['user'] });
   }
 
-  async create(user: User, post: Post): Promise<Post> {
+  async create(
+    user: User,
+    post: Post,
+    image: Express.Multer.File,
+  ): Promise<Post> {
+    post.user = user;
+
     post.slug = slugify(post.title, {
       lower: true,
     });
 
-    post.user = user;
+    post.image = image.filename;
 
     try {
-      return this.postsRepository.save(post);
+      const { id: post_id } = await this.postsRepository.save(post);
+
+      return this.postsRepository.findOne(post_id);
     } catch {
       throw new BadRequestException();
     }
@@ -60,7 +72,9 @@ export class PostsService {
     });
 
     try {
-      return this.postsRepository.save(post);
+      await this.postsRepository.save(post);
+
+      return this.postsRepository.findOne(post_id);
     } catch {
       throw new BadRequestException();
     }
