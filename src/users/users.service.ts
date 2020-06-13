@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { hash } from 'bcrypt';
@@ -13,6 +13,13 @@ export class UsersService {
 
   async create(user: User): Promise<User> {
     user.password = await hash(user.password, 10);
-    return this.usersRepository.save(user);
+
+    try {
+      const { id: user_id } = await this.usersRepository.save(user);
+
+      return this.usersRepository.findOne(user_id);
+    } catch {
+      throw new BadRequestException();
+    }
   }
 }
