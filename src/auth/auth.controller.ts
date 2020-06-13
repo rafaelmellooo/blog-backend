@@ -1,5 +1,12 @@
-import { Controller, Post, Request, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  UseGuards,
+  UseInterceptors,
+  ClassSerializerInterceptor,
+} from '@nestjs/common';
 
+import { User } from '../user.decorator';
 import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './local-auth.guard';
 
@@ -7,9 +14,10 @@ import { LocalAuthGuard } from './local-auth.guard';
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  @UseInterceptors(ClassSerializerInterceptor)
   @UseGuards(LocalAuthGuard)
   @Post('login')
-  login(@Request() req: { user: number }): { access_token: string } {
-    return this.authService.login(req.user);
+  login(@User() user: number): { access_token: string } {
+    return this.authService.login(user);
   }
 }
